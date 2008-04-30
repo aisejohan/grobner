@@ -19,8 +19,8 @@ test:
 	gcc -lgmp -O3 -Wall -o tester test_scalars.o pol.o helper.o scalar.o
 
 make_list:
-	gcc -DLIST_F -Wall -c make_list.c compute.c  delta.c  grobner.c  helper.c  pol.c  reduce.c  scalar.c
-	gcc -lgmp -Wall -o tester make_list.o compute.o  delta.o  grobner.o  helper.o  pol.o  reduce.o  scalar.o
+	gcc -O3 -DLIST_F -Wall -c make_list.c compute.c grobner.c helper.c pol.c scalar.c
+	gcc -O3 -o tester make_list.o compute.o grobner.o helper.o pol.o scalar.o
 
 input_pol:
 	gcc -DINPUT_F -Wall -O3 -march=nocona -c basis.c  compute.c  delta.c  grobner.c  helper.c  pol.c  reduce.c  scalar.c

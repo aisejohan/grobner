@@ -31,12 +31,6 @@
 #include "grobner.h"
 #include "helper.h"
 #include "compute.h"
-#include "delta.h"
-#include "reduce.h"
-
-/* External variables. */
-static int blen1, blen2, blen3;
-
 
 /* Makes a random polynomial of degree degree.		*
  * The result may be the zero polynomial!		*/
@@ -69,7 +63,7 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 		uitterm->n2 = a2;
 		uitterm->n3 = a3;
 		uitterm->n4 = a4;
-		ito_sc(c, uitterm->c);
+		uitterm->c = c;
 		ptrterm = &(uit.leading);
 		while ((*ptrterm) && (kleiner(uitterm, *ptrterm) == KLEINER)) {
 			ptrterm = &((*ptrterm)->next);
@@ -123,7 +117,7 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 				c++;
 			}
 			printf("= ");
-			printmscalar(uitterm->c);
+			print_scalar(uitterm->c);
 			printf("\n");
 			uitterm = uitterm->next;
 		}
@@ -241,100 +235,45 @@ int main()
 	}
 	retry = 1;
 	while (retry == 1) {
-		while (retry == 1) {
-			next_one(nr, coeff);
-			if (is_min(nr, coeff, uit)) {
-				myf = copy_pol(uit);
-				tt = myf.leading;
-				i=0;
-				while (tt) {
-					ito_sc(coeff[i], tt->c);
-					i++;
-					tt = tt->next;
-				}
-				clean_pol(&myf);
-				retry = setup(1);
+		next_one(nr, coeff);
+		if (is_min(nr, coeff, uit)) {
+			myf = copy_pol(uit);
+			tt = myf.leading;
+			i = 0;
+			while (tt) {
+				tt->c = coeff[i];
+				i++;
+				tt = tt->next;
 			}
+			clean_pol(&myf);
+			retry = setup(1);
+		} else {
+			retry = -1;
 		}
 
-		if (d >= d1 + d2 + d3 + d4) {
-			blen1 = check_flatness(d - d1 - d2 - d3 - d4);
-			if (blen1 <= 0) {
-				retry = 1;
-				/* Free up G and myf. */
-				free_tail(myf.leading);
-				for (i = 0; i + 1 <= G.len; i++) {
-					free_tail(G.BC[i]->bc1.leading);
-					free_tail(G.BC[i]->bc2.leading);
-					free_tail(G.BC[i]->bc3.leading);
-					free_tail(G.BC[i]->bc4.leading);
-					free_tail(G.BC[i]->bc5.leading);
-					free_tail(G.ff[i]->leading);
-				}
-				for (i = 0; i + 1 <= maxlength; i++) {
-					free(G.BC[i]);
-					free(G.ff[i]);
-					free(G.ee[i]);
-				}
-				free(G.BC);
-				free(G.ff);
-				free(G.ee);
+		/* retry == 4 means quasi-smooth */
+		if (retry == 4) {
+			for (i = 0; i + 1 <= nr; i++) {
+				printf("%d ", coeff[i]);
 			}
+			printf("  %d", G.len);
+			printf("\n");
 		}
-		if ((retry == 0) && (2*d >= d1 + d2 + d3 + d4)) {
-			blen2 = check_flatness(2*d - d1 - d2 - d3 - d4);
-			if (blen2 <= 0) {
-				retry = 1;
-				/* Free up G and myf. */
-				free_tail(myf.leading);
-				for (i = 0; i + 1 <= G.len; i++) {
-					free_tail(G.BC[i]->bc1.leading);
-					free_tail(G.BC[i]->bc2.leading);
-					free_tail(G.BC[i]->bc3.leading);
-					free_tail(G.BC[i]->bc4.leading);
-					free_tail(G.BC[i]->bc5.leading);
-					free_tail(G.ff[i]->leading);
-				}
-				for (i = 0; i + 1 <= maxlength;i++) {
-					free(G.BC[i]);
-					free(G.ff[i]);
-					free(G.ee[i]);
-				}
-				free(G.BC);
-				free(G.ff);
-				free(G.ee);
-			}
-		}
-		if ((retry == 0) && (3*d >= d1 + d2 + d3 + d4)) { 
-			blen3 = check_flatness(3*d - d1 - d2 - d3 - d4);
-			if (blen3 > 0) {
-				for (i = 0; i + 1 <= nr; i++) {
-					printf("%d ", coeff[i]);
-				}
-				printf("  %d", G.len);
-				printf("\n");
-			}
 
-			retry = 1;
+		if (retry >= 0) {
 			/* Free up G and myf. */
 			free_tail(myf.leading);
 			for (i = 0; i + 1 <= G.len; i++) {
-				free_tail(G.BC[i]->bc1.leading);
-				free_tail(G.BC[i]->bc2.leading);
-				free_tail(G.BC[i]->bc3.leading);
-				free_tail(G.BC[i]->bc4.leading);
-				free_tail(G.BC[i]->bc5.leading);
 				free_tail(G.ff[i]->leading);
 			}
 			for (i = 0; i + 1 <= maxlength; i++) {
-				free(G.BC[i]);
 				free(G.ff[i]);
 				free(G.ee[i]);
 			}
-			free(G.BC);
 			free(G.ff);
 			free(G.ee);
 		}
+		retry = 1;
 	}
 	
 	exit(13);

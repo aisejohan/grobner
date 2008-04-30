@@ -351,7 +351,7 @@ int setup(int silent)
 	}
 	if (!myf.leading) {
 		if (!silent) printf("Polynomial is zero!\n");
-		return(1);
+		return(-1);
 	}
 	if (!silent) printf("\n");
 	
@@ -359,14 +359,14 @@ int setup(int silent)
 	if (!myf1.leading) {
 		if (!silent) printf("Polynomial does not depend on x!\n");
 		free_tail(myf.leading);
-		return(1);
+		return(-1);
 	}
 	myf2 = deriv(myf, 2);
 	if (!myf2.leading) {
 		if (!silent) printf("Polynomial does not depend on y!\n");
 		free_tail(myf.leading);
 		free_tail(myf1.leading);
-		return(1);
+		return(-1);
 	}
 	myf3 = deriv(myf, 3);
 	if (!myf3.leading) {
@@ -374,7 +374,7 @@ int setup(int silent)
 		free_tail(myf.leading);
 		free_tail(myf1.leading);
 		free_tail(myf2.leading);
-		return(1);
+		return(-1);
 	}
 	myf4 = deriv(myf, 4);
 	if (!myf4.leading) {
@@ -383,7 +383,7 @@ int setup(int silent)
 		free_tail(myf1.leading);
 		free_tail(myf2.leading);
 		free_tail(myf3.leading);
-		return(1);
+		return(-1);
 	}
 	if (!silent) printf("\n");
 
@@ -491,10 +491,17 @@ int setup(int silent)
 					for (i = 0; i + 1 <= maxlength; i++) {
 					  free(G.ff[i]);
 					  free(G.ee[i]);
+					  free(V[i]);
 					}
 					free(G.ff);
 					free(G.ee);
-					return(1);
+					free(V);
+					free_tail(myf.leading);
+					free_tail(myf1.leading);
+					free_tail(myf2.leading);
+					free_tail(myf3.leading);
+					free_tail(myf4.leading);
+					return(-1);
 				}
 				check = 2; /* success. */
 			} else {
@@ -689,5 +696,13 @@ int setup(int silent)
 #endif /* KIJKEN */
 
 	/* Success. */
-	return(0);
+	free_tail(myf1.leading);
+	free_tail(myf2.leading);
+	free_tail(myf3.leading);
+	free_tail(myf4.leading);
+	for (i = 0; i <= maxlength - 1; i++) {
+		free(V[i]);
+	}
+	free(V);
+	return(test_G());
 }
