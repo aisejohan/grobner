@@ -1,0 +1,51 @@
+Description
+-----------
+
+Partial implementation of the algorithm by Timothy G. Abbott, Kiran S. Kedlaya,
+and David Roe described in the preprint math.NT/0601508, with the additional
+twist that you can do surfaces in weigthed projected spaces.
+
+Requirements
+------------
+
+You will need a compiler and the gmp library installed.
+
+Usage
+-----
+
+Step 1: Edit the files data.h and the Makefile.
+
+data.h: Choose degrees d1,d2,d3,d4 of the coordinates in weighted projective
+space and the degree of the surface d. Choose the prime p and the prime power r
+(the precision). As well choose q which determines the number of terms in the
+expansion to compute. It is best to choose
+	d1 <= d2 <= d3 <= d4
+
+Makefile: change --march=nocona to --march=<your-cpu-type> or just 
+remove the --march= option entirely.
+
+Step 2: Compile with the command ``make''.
+
+Step 3: Run with ./tester
+
+Enjoy!
+
+
+TODO
+----
+
+1. Make one_step_down faster by implementing Kiran's idea of precomputing the
+expressions for suitable powers of the coordinates. Tried this but it is not
+faster in our setup. Done.
+
+2. Use/find/implement a better library for scalars. Done: now the program uses
+the GMP, the GNU Multiple Precision Arithmetic Library.
+
+3. Output to file for input in pari. Started doing this: now there is a pari
+script that tries to find a Weil polynomial p-adically close to a given integer
+polynomial, it is called post.gp
+
+4. Implement the algorithm for estimating precision from math.NT/0601508
+
+5. Make the program work in cases where the function check_flatness 
+returns -1.

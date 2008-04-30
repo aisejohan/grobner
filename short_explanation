@@ -1,0 +1,67 @@
+degree(xi) = di
+degree(F) = d
+s = d1 + d2 + d3 + d4
+
+Omega	= d1 x1 d(x2) /\ d(x3) /\ d(x4) 
+	  - d2 x2 d(x3) /\ d(x4) /\ d(x1)
+	  + d3 x3 d(x4) /\ d(x1) /\ d(x2)
+	  - d4 x4 d(x1) /\ d(x2) /\ d(x3)
+	= (x2 x3 x4)^(-d1+1) (x1)^(s-d1+1) d1^(-2)
+		d(x2^d1/x1^d2) /\ d(x3^d1/x1^d3) /\ d(x4^d1/x1^d4).
+
+Eta	= d1 x1 d(x2) /\ d(x3) 
+	  - d2 x2 d(x1) /\ d(x2) 
+	  + d3 x3 d(x1) /\ d(x2)
+	= (x2 x3)^(-d1+1) (x1)^(d2+d3+1) d1^(-1)
+		d(x2^d1/x1^d2) /\ d(x3^d1/x1^d3).
+
+We compute
+
+	d( G Eta / F^j )
+	= d(G) /\ Eta / F^j
+	  + G d(Eta) / F^j
+	  - j G d(F) /\ Eta / F^(j+1)
+	= G_1 d(x1) /\ d1 x1 d(x2) /\ d(x3) / F^j
+	  - G_2 d(x2) /\ d2 x2 d(x1) /\ d(x3) / F^j
+	  + G_3 d(x3) /\ d3 x3 d(x1) /\ d(x2) / F^j
+	  + G_4 d(x4) /\ Eta / F^j
+	  + (s-d4) G d(x1) /\ d(x2) /\ d(x3) / F^j
+	  - j G F_1 d(x1) /\ d1 x1 d(x2) /\ d(x3) / F^(j+1)
+	  - j G F_2 d(x2) /\ d2 x2 d(x3) /\ d(x1) / F^(j+1)
+	  - j G F_3 d(x3) /\ d3 x3 d(x1) /\ d(x2) / F^(j+1)
+	  - j G F_4 d(x4) /\ Eta / F^(j+1)
+	= [(degree(G)+s-d4)G  - d4 x4 G_4] d(x1) /\ d(x2) /\ d(x3) / F^j
+	  + G_4 d(x4) /\ Eta / F^j
+	  - j G[degree(F) F - d4 x4 F_4 ]  d(x1) /\ d(x2) /\ d(x3) / F^(j+1)
+	  - j G F_4 d(x4) /\ Eta / F^(j+1)
+(*)	= - d4 x4 G_4 d(x1) /\ d(x2) /\ d(x3) / F^j
+	  + G_4 d(x4) /\ Eta / F^j
+	  + j d4 G x4 F_4 d(x1) /\ d(x2) /\ d(x3) / F^(j+1)
+	  - j G F_4 d(x4) /\ Eta / F^(j+1)
+	= G_4 Omega / F^j - j G F_4 Omega / F^(j+1)
+
+(*) Note that: degree(G) = j degree(F) - s + d4
+Also note that the degree of GF_4 is equal to (j+1)d-s.
+
+The forms where cohomology lies are
+
+   h Omega / F ,   h Omega / F^2 ,   h Omega / F^3
+
+We define Delta by the formula
+
+   Delta = (F^p - sigma(F))/p
+
+where sigma is the lift of frobenius mapping xi to xi^p. So the Frobenius maps 
+
+   sigma( h Omega / F^j ) = 
+   	
+	sigma(h) p^3 (x1x2x3x4)^(p-1) Omega 
+	-----------------------------------
+	         (F^p - p Delta)^j
+
+	=
+	
+	\sum_{i=0}^infty 
+	
+	p^i Delta^i sigma(h) p^3 (x1x2x3x4)^(p-1) (i+j-1 choose j-1)
+		Omega / F^(p(j+i))
