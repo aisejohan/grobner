@@ -1,5 +1,5 @@
 /*
- *	basis.c
+ *	compute.h
  *
  * 	Copyright 2006 Johan de Jong
  *
@@ -21,27 +21,23 @@
  *
  *									*/
 
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 
-#include "data.h"
-#include "scalar.h"
-#include "pol.h"
-#include "grobner.h"
-#include "helper.h"
-#include "compute.h"
+struct exponents {
+	unsigned int e1;
+	unsigned int e2;
+	unsigned int e3;
+	unsigned int e4;
+};
 
-int main(void )
-{
-	/* Setup the scalars. */
-	setup_scalars();
+struct lijst {
+	struct exponents **ee;
+	struct polynomial **ff;
+	unsigned int len;
+};
 
-	/* Seed the randomness. */
-	set_seed(113);
+/* Global variables used in other files */
+extern struct lijst G;
+extern struct polynomial myf;
 
-	setup(0);
-
-	return(11);
-}
+/* Functions used in other files. */
+int setup(int silent);
