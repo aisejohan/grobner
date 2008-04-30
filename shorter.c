@@ -62,12 +62,12 @@ static struct exponents lcm(struct exponents *mon1, struct exponents *mon2)
 }
 
 /* Rarely the case.							*/
-static unsigned int rel_prime(struct exponents *mon1, struct exponents *mon2)
+static unsigned int rel_prime(struct exponents mon1, struct exponents mon2)
 {
-	if ((mon1->e1 > 0) && (mon2->e1 > 0)) return(0);
-	if ((mon1->e2 > 0) && (mon2->e2 > 0)) return(0);
-	if ((mon1->e3 > 0) && (mon2->e3 > 0)) return(0);
-	if ((mon1->e4 > 0) && (mon2->e4 > 0)) return(0);
+	if ((mon1.e1 > 0) && (mon2.e1 > 0)) return(0);
+	if ((mon1.e2 > 0) && (mon2.e2 > 0)) return(0);
+	if ((mon1.e3 > 0) && (mon2.e3 > 0)) return(0);
+	if ((mon1.e4 > 0) && (mon2.e4 > 0)) return(0);
 	return(1);
 }
 
@@ -237,25 +237,65 @@ static void sort_G(void)
 
 	for (i = 0; i+1 <= G.len; i++) {
 		for (j = i+1; j+1 <= G.len; j++) {
-			if (!smaller(*G.ee[i],*G.ee[j])) {
-					s_ee = G.ee[i];
-					s_ff = G.ff[i];
-					G.ee[i] = G.ee[j];
-					G.ff[i] = G.ff[j];
-					G.ee[j] = s_ee;
-					G.ff[j] = s_ff;
+			if ((((*G.ff[j]).degree < (*G.ff[i]).degree))
+			|| ((((*G.ff[j]).degree == (*G.ff[i]).degree)) &&
+			(smaller(*G.ee[i], *G.ee[j])))) {
+				s_ee = G.ee[i];
+				s_ff = G.ff[i];
+				G.ee[i] = G.ee[j];
+				G.ff[i] = G.ff[j];
+				G.ee[j] = s_ee;
+				G.ff[j] = s_ff;
 			}
+		}
+	}
+}
+
+static void check_sort_G(void)
+{
+	int i, j;
+
+	for (i = 0; i+1 <= G.len; i++) {
+		for (j = i+1; j+1 <= G.len; j++) {
+			if ((((*G.ff[j]).degree < (*G.ff[i]).degree))
+			|| ((((*G.ff[j]).degree == (*G.ff[i]).degree)) &&
+			(smaller(*G.ee[i], *G.ee[j])))) {
+				printf("not sorted.\n");
+			}
+		}
+	}
+}
+
+
+/* Only does the right thing on a sorted G. */
+static void reduce_G(void)
+{
+	int i, j;
+
+	i = 1;
+	while (i + 1 <= G.len) {
+		gen_division(G.ff[i], i, G.ff);
+		if (!(*G.ff[i]).leading) {
+			j = i;
+			while (j + 1 < G.len) {
+				G.ff[j] = G.ff[j + 1];
+				j++;
+			}
+			G.len--;
+		} else {
+			*G.ee[i] = take_exponents(*G.ff[i]);
+			i++;
 		}
 	}
 }
 
 int setup(int silent)
 {
-	int i, j, k, ii, jj, old, new, check, epsilon, lG;
+	int i, j, k, ii, jj, old, new, check, epsilon, lG, dSS;
 	struct polynomial myf1, myf2, myf3, myf4;
 	struct polynomial SS, T;
-	struct polynomial *Tff;
-	struct exponents *Tee, ee;
+	struct polynomial *Tff, *pff;
+	struct exponents *Tee, *pee, ee;
 	struct polynomial **bb;
 	unsigned int m, mold, mnew;
 	struct exponents lcm_new, lcm_old;
@@ -348,7 +388,9 @@ int setup(int silent)
 	G.len = 5;
 
 	sort_G();
-	print_G();
+	reduce_G();
+	sort_G();
+	check_sort_G();
 
 	/* Loop for computing the Grobner basis.	*
 	 * Needlessly complicated.			*/
@@ -356,8 +398,13 @@ int setup(int silent)
 	jj = 1;
 	while (jj < G.len) {
 		/* Make S-pol. */
-		SS = s_pol(*G.ff[ii], *G.ff[jj]); 
-		if ((SS.leading) && (!zero_on_division(SS, G.len, G.ff))) {
+		if (rel_prime(*G.ee[ii], *G.ee[jj])) {
+			SS.leading = NULL;
+		} else {
+			SS = s_pol(*G.ff[ii], *G.ff[jj]);
+		}
+		if (SS.leading) gen_division(&SS, G.len - 1, G.ff);
+		if (SS.leading) {
 			G.len++;		
 			if (G.len > maxlength) {
 				printf("Please increase maxlength.\n");
@@ -387,19 +434,19 @@ int setup(int silent)
 			check = 0;
 			/* Already increased G.len so have to substract
 			 * one here. */
-			gen_division(&SS, G.len - 1, G.ff);
 			ee = take_exponents(SS);
+			dSS = SS.degree;
 			i = 0;
 			j = 1;
 			while (j) {
-				if (smaller(ee, *G.ee[i])) {
+				if (i + 1 == G.len) {
+					j = 0;
+				} else if ((dSS < (*G.ff[i]).degree) ||
+				((dSS == (*G.ff[i]).degree) &&
+					(smaller(*G.ee[i], ee)))) {
 					j = 0;
 				} else {
-					if (i + 1 == G.len) {
-						j = 0;
-					} else {
-						i++;
-					}
+					i++;
 				}
 			}
 			j = G.len - 1;
@@ -410,14 +457,61 @@ int setup(int silent)
 			}
 			*G.ff[i] = SS;
 			*G.ee[i] = ee; /* Done updating G. */
-			printf("-------------------------\n");
-			print_G();
 		}
 		if (ii + 1 < jj) {
 			ii++;
 		} else {
 			jj++;
+			i = 1;
 			ii = 0;
+			while ((jj < G.len) && (i)) {
+				gen_division(G.ff[jj], jj, G.ff);
+				if (!(*G.ff[jj]).leading) {
+					j = jj;
+					while (j + 1 < G.len) {
+						*G.ff[j] = *G.ff[j + 1];
+						*G.ee[j] = *G.ee[j + 1];
+						j++;
+					}
+					G.len--;
+				} else {
+					i = 0;
+					j = jj;
+					while (
+						(j + 1 < G.len)
+					&&
+					 (
+					  (
+						( (*G.ff[j + 1]).degree <
+							(*G.ff[j]).degree )
+					 
+					  ||
+					   (
+						( (*G.ff[j + 1]).degree ==
+						(*G.ff[j]).degree )
+					
+					   &&
+						(smaller(*G.ee[j],
+							*G.ee[j + 1]))
+					   )
+					  )
+					 )
+					) {
+						pee = G.ee[j];
+						pff = G.ff[j];
+						G.ee[j] = G.ee[j + 1];
+						G.ff[j] = G.ff[j + 1];
+						G.ee[j + 1] = pee;
+						G.ff[j + 1] = pff;
+						j++;
+						/* jj-th spot has change
+						 * so do it all again.*/
+						i = 1;
+					}
+
+				}
+			}
+			if (jj < G.len) *G.ee[jj] = take_exponents(*G.ff[jj]);
 		}
 	}/* End loop computing Grobner basis. */
 
