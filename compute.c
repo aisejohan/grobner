@@ -280,12 +280,7 @@ static void sort_G(void)
 
 	for (i = 0; i+1 <= G.len; i++) {
 		for (j = i+1; j+1 <= G.len; j++) {
-			if (
-			/* Test for degree of leading term. */
-			(G.ff[j]->degree < G.ff[i]->degree) ||
-			/* Test for ordering. */
-			((G.ff[j]->degree == G.ff[i]->degree) &&
-				((smaller(*G.ee[i],*G.ee[j]))))) {
+			if (smaller(*G.ee[i],*G.ee[j])) {
 					s_ee = G.ee[i];
 					s_ff = G.ff[i];
 					G.ee[i] = G.ee[j];
