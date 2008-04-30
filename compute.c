@@ -470,7 +470,6 @@ int setup(int silent)
 	/* Loop for computing the Grobner basis.	*
 	 * Needlessly complicated.			*/
 	while (m > 0) {
-
 		/* Here we take the last pair from M and we reduce	*
 		 * it and we see if there is anything left.		*/
 		ii = M[m - 1].i;
@@ -509,16 +508,9 @@ int setup(int silent)
 		if (check == 2) {
 			check = 0;
 			/* Already increased G.len so have to substract one here. */
-			aa = gen_division(&SS, G.len - 1, G.ff);
+			gen_division(&SS, G.len - 1, G.ff);
 			*G.ff[G.len - 1] = SS;
 			*G.ee[G.len - 1] = take_exponents(SS); /* Done updating G. */
-
-			/* Frees space allocated for aa. */
-			for (i = 0; i + 1 + 1 <= G.len; i++) {
-				free_tail(aa[i]->leading);
-				free(aa[i]);
-			}
-			free(aa); 
 
 			/* Update M. */
 
@@ -593,22 +585,6 @@ int setup(int silent)
 		}
 	}/* End loop computing Grobner basis. */
 
-	i = test_G();
-	if (i < 4) {
-		/* These are safe to free. */
-		for (i = 0; i + 1 <= G.len; i++) {
-			free_tail(G.ff[i]->leading);
-		}
-		for (i = 0; i + 1 <= maxlength; i++) {
-			free(G.ff[i]);
-			free(G.ee[i]);
-		}
-		free(G.ff);
-		free(G.ee);
-		if (!silent) printf("Not smooth!\n");
-		return(1);
-	}
-
 #ifdef KIJKEN
 	printf("The initial length of G is %d.\n", G.len);
 	print_G();
@@ -640,7 +616,7 @@ int setup(int silent)
 		}
 		
 		new = G.len - 1; /* Remember for freeing aa later. */
-		aa = gen_division(G.ff[i], G.len - 1, bb);
+		gen_division(G.ff[i], G.len - 1, bb);
 
 #ifdef KIJKEN
 		if ((G.ff[i]->leading) && 
@@ -672,12 +648,6 @@ int setup(int silent)
 			i++;
 		}
 
-		/* Free aa. */
-		for (j = 0; j + 1 <= new; j++) {
-			free_tail(aa[j]->leading);
-			free(aa[j]);
-		}
-		free(aa);
 	}
 	
 	/* Free bb. */
@@ -699,6 +669,7 @@ int setup(int silent)
 	/* Recheck all S-pols reduce to zero! */
 	printf("Checking S-pols.\n");
 	for (i = 0; i <= G.len - 1; i++) {
+		printf("Doing %d out of %d.\n", i+1, G.len);
 		for (j = i + 1; j <= G.len - 1; j++) {
 			SS = s_pol(*G.ff[i], *G.ff[j]);
 			if (zero_on_division(SS, G.len, G.ff)) {

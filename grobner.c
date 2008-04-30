@@ -55,33 +55,23 @@ static inline int deelbaar(struct term *mon1, struct term *mon2)
  *								*
  * **************************************************************/
 #if defined OLD_GROBNER || defined MIXED_GROBNER
-struct polynomial ** 
+void 
 gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 {
-	struct polynomial tmp[ss];
+	struct polynomial tmp;
 	struct polynomial vh_rest[ss];
-	struct polynomial **aa;
 	struct polynomial *ppp;
-	struct term *aaterm[ss];
 	struct term **ptrterm;
 	struct term *pppterm;
 	struct term mon;
 	unsigned int i, dividing;
 
 	ppp = NULL;
+	tmp.leading = NULL;
 	make_pol(&ppp);
-	aa = (struct polynomial **)malloc(ss*sizeof(struct polynomial *));
-	if (!aa) {
-		perror("Malloc failed!");
-		exit(1);
-	}
 	for (i = 0; i + 1 <= ss; i++) {
-		tmp[i].leading = NULL;
-		aaterm[i] = NULL;
-		aa[i] = NULL;
-		make_pol(&aa[i]);
-		aa[i]->degree = (pp->degree > vh[i]->degree) ?
-			(pp->degree - vh[i]->degree) : 0;
+		vh_rest[i].leading = vh[i]->leading->next;
+		vh_rest[i].degree = vh[i]->degree;
 	}
 
 	/* Copy pp into ppp. */
@@ -109,23 +99,8 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 				ppp->leading = ppp->leading->next;
 				free_term(pppterm);
 
-				if (aaterm[i]) {
-					times_term(mon, vh_rest[i], &(tmp[i]));
-					make_term(&aaterm[i]->next);
-					copy_term(&mon, aaterm[i]->next);
-					aaterm[i] = aaterm[i]->next;
-				} else {
-					vh_rest[i].degree = vh[i]->degree;
-					vh_rest[i].leading = 
-						vh[i]->leading->next;
-					tmp[i] = make_times_term(mon,
-						vh_rest[i]);
-					make_term(&aa[i]->leading);
-					copy_term(&mon, aa[i]->leading);
-					aaterm[i] = aa[i]->leading;
-				}
-
-				rep_pol_add(ppp, tmp[i]);
+				tmp = make_times_term(mon, vh_rest[i]);
+				merge_add(ppp, tmp);
 
 				dividing = 0;
 			} else {
@@ -143,44 +118,29 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 			*ptrterm = NULL;
 		}
 	}
-	for (i = 0; i + 1 <= ss; i++) {
-		free_tail(tmp[i].leading);
-	}
 	free(ppp);
-	return(aa);
 }
 #endif
 
 
 #ifdef NEW_GROBNER
-struct polynomial ** 
+void
 gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 {
 	struct polynomial save_the_spot, uit;
 	struct term test;
 	struct polynomial vh_rest[ss];
-	struct polynomial **aa;
 	struct polynomial *ppp;
-	struct term **ptraa[ss];
+	struct term **save;
 	struct term **ptrterm;
 	unsigned int i, first;
 	scalar c;
 
 	ppp = NULL;
 	make_pol(&ppp);
-	aa = (struct polynomial **)malloc(ss*sizeof(struct polynomial *));
-	if (!aa) {
-		perror("Malloc failed!");
-		exit(1);
-	}
 	for (i = 0; i+1 <= ss; i++) {
-		aa[i] = NULL;
-		make_pol(&aa[i]);
-		aa[i]->degree = (pp->degree > vh[i]->degree) ?
-					(pp->degree - vh[i]->degree) : 0;
 		vh_rest[i].degree = vh[i]->degree;
 		vh_rest[i].leading = vh[i]->leading->next;
-		ptraa[i] = &(aa[i]->leading);
 	}
 
 	/* Copy pp into ppp. */
@@ -195,8 +155,9 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 
 		if (deelbaar(vh[i]->leading, ppp->leading)) {
 
-			save_the_spot.degree = aa[i]->degree;
+			save_the_spot.degree = ppp->degree - vh[i]->degree;
 			save_the_spot.leading = ppp->leading;
+			save = &(save_the_spot.leading);
 			first = 1;
 
 			do {
@@ -205,7 +166,7 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 				c = sc_neg_inv(vh[i]->leading->c);
 				c = sc_mul(c, ppp->leading->c);
 
-				*ptraa[i] = ppp->leading;
+				*save = ppp->leading;
 
 				ppp->leading->n1 -= vh[i]->leading->n1;
 				ppp->leading->n2 -= vh[i]->leading->n2;
@@ -214,21 +175,21 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 				ppp->leading->c = c;
 
 				ppp->leading = ppp->leading->next;
-				(*ptraa[i])->next = NULL;
+				(*save)->next = NULL;
 
 				if ((first) && (vh_rest[i].leading)) {
-					test.n1 = (*ptraa[i])->n1 + 
+					test.n1 = (*save)->n1 + 
 						vh_rest[i].leading->n1;
-					test.n2 = (*ptraa[i])->n2 +
+					test.n2 = (*save)->n2 +
 						vh_rest[i].leading->n2;
-					test.n3 = (*ptraa[i])->n3 +
+					test.n3 = (*save)->n3 +
 						vh_rest[i].leading->n3;
-					test.n4 = (*ptraa[i])->n4 +
+					test.n4 = (*save)->n4 +
 						vh_rest[i].leading->n4;
 					first = 0;
 				}
 
-				ptraa[i]= &((*ptraa[i])->next);
+				save= &((*save)->next);
 
 			} while ((ppp->leading) &&
 				deelbaar(vh[i]->leading, ppp->leading) &&
@@ -236,6 +197,7 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 				(GROTER == kleiner(ppp->leading, &test))));
 
 			uit = pol_mult(save_the_spot, vh_rest[i]);
+			free_tail(save_the_spot.leading);
 			merge_add(ppp, uit);
 
 			i = 0;
@@ -254,7 +216,6 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 	}
 
 	free(ppp);
-	return(aa);
 }
 #endif
 

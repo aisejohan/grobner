@@ -30,7 +30,7 @@
 
 /* There are two orderings. LEX and REVLEX. Chose one by
  * commenting out one of the following two lines. */
-#define LEX_ORDER
+#define REVLEX_ORDER
 /* #define REVLEX_ORDER */
 
 /* There are three strategies for reducing the polynomials
@@ -41,13 +41,13 @@
  * or
  * 	REVLEX_ORDER + OLD_GROBNER
  * can be much faster. */
-#define NEW_GROBNER
+#define OLD_GROBNER
 
 #define d1	1
 #define d2	1
 #define d3	1
 #define d4	1
-#define d	4
+#define d	10
 #define p	13
 #define r	40		/* Exponent. */
 #define q	5		/* Largest power of Delta. */

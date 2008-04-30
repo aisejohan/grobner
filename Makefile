@@ -1,5 +1,5 @@
 all:
-	gcc -Wall -O3 -DKIJKEN -march=nocona -c main.c compute.c grobner.c helper.c pol.c scalar.c
+	gcc -Wall -O3 -march=nocona -c main.c compute.c grobner.c helper.c pol.c scalar.c
 	gcc -O3 -march=nocona -o tester main.o compute.o grobner.o helper.o pol.o scalar.o
 
 clean:

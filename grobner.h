@@ -21,6 +21,6 @@
  *
  *									*/
 
-struct polynomial **gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh);
+void gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh);
 struct polynomial *myf_division(struct polynomial *pp);
 unsigned int zero_on_division(struct polynomial ppp, unsigned int ss, struct polynomial **vh);

@@ -335,7 +335,7 @@ struct polynomial deriv(struct polynomial f, unsigned int i)
 		uit.degree = (f.degree > d4) ? (f.degree - d4) : 0;
 		ptrterm = &(uit.leading);
 		while (fterm) {
-			c = fterm->n1 % prime;
+			c = fterm->n4 % prime;
 			c = sc_mul(c, fterm->c);
 			if (c) {
 				make_term(ptrterm);
