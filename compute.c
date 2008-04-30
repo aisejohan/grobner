@@ -280,7 +280,7 @@ static void sort_G(void)
 
 	for (i = 0; i+1 <= G.len; i++) {
 		for (j = i+1; j+1 <= G.len; j++) {
-			if (smaller(*G.ee[i],*G.ee[j])) {
+			if (!smaller(*G.ee[i],*G.ee[j])) {
 					s_ee = G.ee[i];
 					s_ff = G.ff[i];
 					G.ee[i] = G.ee[j];
@@ -418,6 +418,8 @@ int setup(int silent)
 	*G.ff[4] = copy_pol(myf);
 	*G.ee[4] = take_exponents(myf);
 	G.len = 5;
+
+	sort_G();
 
 	V = (unsigned char **) malloc(maxlength*sizeof(unsigned char *));
 	if (!V) {
