@@ -450,3 +450,32 @@ void rep_deriv(struct polynomial *f, unsigned int i)
 	}
 	exit(1);
 }
+
+struct polynomial q_equation(int i, int j)
+{
+	struct polynomial A, B, uit;
+	int di, dj;
+	di = (i == 1)*d1 + (i == 2)*d2 + (i == 3)*d3 + (i == 4)*d4;
+	dj = (j == 1)*d1 + (j == 2)*d2 + (j == 3)*d3 + (j == 4)*d4;
+	A.leading = NULL;
+	B.leading = NULL;
+	A.degree = (q - 1)*di*dj;
+	B.degree = (q - 1)*di*dj;
+	make_term(&A.leading);
+	make_term(&B.leading);
+	A.leading->c = 1;
+	B.leading->c = prime - 1;
+	A.leading->n1 = (q - 1)*(i == 1)*dj;
+	A.leading->n2 = (q - 1)*(i == 2)*dj;
+	A.leading->n3 = (q - 1)*(i == 3)*dj;
+	A.leading->n4 = (q - 1)*(i == 4)*dj;
+	B.leading->n1 = (q - 1)*(j == 1)*di;
+	B.leading->n2 = (q - 1)*(j == 2)*di;
+	B.leading->n3 = (q - 1)*(j == 3)*di;
+	B.leading->n4 = (q - 1)*(j == 4)*di;
+	uit = pol_add(A, B);
+	free_tail(A.leading);
+	free_tail(B.leading);
+	print_pol(uit);
+	return(uit);
+}

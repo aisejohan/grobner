@@ -47,10 +47,10 @@
 #define d2	1
 #define d3	1
 #define d4	1
-#define d	10
-#define p	13
+#define d	5
+#define p	3
 #define r	40		/* Exponent. */
-#define q	5		/* Largest power of Delta. */
+#define q	27		/* Power of p. */
 
 #define maxlength	1000
 

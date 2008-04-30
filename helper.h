@@ -28,3 +28,4 @@ void rep_deriv(struct polynomial *f, unsigned int i);
 struct polynomial deriv(struct polynomial f, unsigned int i);
 unsigned int number_terms(struct polynomial f);
 struct polynomial frobenius(struct polynomial f);
+struct polynomial q_equation(int i, int j);

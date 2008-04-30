@@ -331,7 +331,7 @@ int setup(int silent)
 	struct polynomial SS, T;
 	struct polynomial *Tff;
 	struct exponents *Tee;
-	struct polynomial **aa, **bb;
+	struct polynomial **bb;
 	struct pair M[maxlength*maxlength];
 	struct pair Mold[maxlength*maxlength];
 	struct pair Mnew[maxlength];
