@@ -322,7 +322,11 @@ int setup(int silent)
 {
 	int i, j, k, ii, jj, old, new, check, epsilon;
 	struct pair tmppair;
+#ifndef TEST
 	struct polynomial myf1, myf2, myf3, myf4;
+#else
+	int **n;
+#endif
 	struct polynomial SS, T;
 	struct polynomial *Tff;
 	struct exponents *Tee;
@@ -335,6 +339,7 @@ int setup(int silent)
 	SS.leading = NULL;
 	T.leading = NULL;
 
+#ifndef TEST
 	/* Initialize myf,myf1,myf2,myf3,myf4 */
 	if (!silent) {
 		printf("\n\n");
@@ -381,6 +386,7 @@ int setup(int silent)
 		return(-1);
 	}
 	if (!silent) printf("\n");
+#endif
 
 	/* Allocate memory for G */
 	G.ff = (struct polynomial **)
@@ -406,6 +412,7 @@ int setup(int silent)
 		}
 	}
 
+#ifndef TEST
 	/* Initialize G */
 	*G.ff[0] = copy_pol(myf4);
 	*G.ee[0] = take_exponents(myf4);
@@ -418,6 +425,23 @@ int setup(int silent)
 	*G.ff[4] = copy_pol(myf);
 	*G.ee[4] = take_exponents(myf);
 	G.len = 5;
+#else
+	i = list_relations(&n);
+	j = 0;
+	while (j < i) {
+		*G.ff[j] = q_equation(n[j], 4);
+		*G.ee[j] = take_exponents(*G.ff[j]);
+		j++;
+	}
+	*G.ff[i] = make_random(d, 0);
+	*G.ee[i] = take_exponents(*G.ff[i]);
+	i++;
+	*G.ff[i] = make_random(2*d, 0);
+	*G.ee[i] = take_exponents(*G.ff[i]);
+	i++;
+	G.len = i;
+	print_G();
+#endif
 
 	sort_G();
 
@@ -493,11 +517,13 @@ int setup(int silent)
 					free(G.ff);
 					free(G.ee);
 					free(V);
+#ifndef TEST
 					free_tail(myf.leading);
 					free_tail(myf1.leading);
 					free_tail(myf2.leading);
 					free_tail(myf3.leading);
 					free_tail(myf4.leading);
+#endif
 					return(-1);
 				}
 				check = 2; /* success. */
@@ -693,10 +719,12 @@ int setup(int silent)
 #endif /* KIJKEN */
 
 	/* Success. */
+#ifndef TEST
 	free_tail(myf1.leading);
 	free_tail(myf2.leading);
 	free_tail(myf3.leading);
 	free_tail(myf4.leading);
+#endif
 	for (i = 0; i <= maxlength - 1; i++) {
 		free(V[i]);
 	}

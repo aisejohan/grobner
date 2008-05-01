@@ -43,12 +43,12 @@
  * can be much faster. */
 #define OLD_GROBNER
 
-#define d1	8
-#define d2	7
+#define d1	7
+#define d2	8
 #define d3	15
 #define d4	19
-#define d	100
-#define p	31
+#define d	64
+#define p	2
 #define r	40		/* Exponent. */
 #define q	27		/* Power of p. */
 

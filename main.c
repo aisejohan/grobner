@@ -39,7 +39,7 @@ int main(void )
 	setup_scalars();
 
 	/* Seed the randomness. */
-	set_seed(113);
+	set_seed(-22178966);
 
 	setup(0);
 

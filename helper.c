@@ -54,6 +54,7 @@ void set_seed(unsigned int zaadje)
 			willekeurig = 666;
 		}
 	}
+	printf("The seed is %d.\n", willekeurig);
 	srand(willekeurig);
 	uit = close(fd);
 	return;
@@ -157,6 +158,7 @@ struct polynomial make_random(unsigned int degree, int print)
 		a2 = uitterm->n2;
 		a3 = uitterm->n3;
 		a4 = uitterm->n4;
+if (print) {
 		c = 0;
 		printf("Coefficient of   ");
 		if (a1) {
@@ -192,9 +194,12 @@ struct polynomial make_random(unsigned int degree, int print)
 			c++;
 		}
 		printf("= ");
+}
 #ifndef INPUT_F
-		if (print) print_scalar(uitterm->c);
- 		printf("\n");
+		if (print) {
+			print_scalar(uitterm->c);
+ 			printf("\n");
+		}
 #else
  #ifdef OUTPUT_LIST
  		printf("\n");
@@ -451,28 +456,52 @@ void rep_deriv(struct polynomial *f, unsigned int i)
 	exit(1);
 }
 
-struct polynomial q_equation(int i, int j)
+int list_relations(int ***n)
+{
+	int i;
+	int nn[3][4] = {{-1, -1, 1, 0}, {0, -1, -2, 2}, {-4, 3, -1, 1}};
+
+	*n = (int **)malloc(3*sizeof(int *));
+	i = 0;
+	while (i < 3) {
+		(*n)[i] = (int *) malloc(4*sizeof(int));
+		(*n)[i][0] = nn[i][0];
+		(*n)[i][1] = nn[i][1];
+		(*n)[i][2] = nn[i][2];
+		(*n)[i][3] = nn[i][3];
+		i++;
+	}
+	return(3);
+}
+
+struct polynomial q_equation(int *n, unsigned int a)
 {
 	struct polynomial A, B, uit;
-	int di, dj;
-	di = (i == 1)*d1 + (i == 2)*d2 + (i == 3)*d3 + (i == 4)*d4;
-	dj = (j == 1)*d1 + (j == 2)*d2 + (j == 3)*d3 + (j == 4)*d4;
+	int qq;
+
+	qq = 1;
+	while (a > 0) {
+		qq = qq*prime;
+		a--;
+	}
 	A.leading = NULL;
 	B.leading = NULL;
-	A.degree = (q - 1)*di*dj;
-	B.degree = (q - 1)*di*dj;
 	make_term(&A.leading);
 	make_term(&B.leading);
 	A.leading->c = 1;
 	B.leading->c = prime - 1;
-	A.leading->n1 = (q - 1)*(i == 1)*dj;
-	A.leading->n2 = (q - 1)*(i == 2)*dj;
-	A.leading->n3 = (q - 1)*(i == 3)*dj;
-	A.leading->n4 = (q - 1)*(i == 4)*dj;
-	B.leading->n1 = (q - 1)*(j == 1)*di;
-	B.leading->n2 = (q - 1)*(j == 2)*di;
-	B.leading->n3 = (q - 1)*(j == 3)*di;
-	B.leading->n4 = (q - 1)*(j == 4)*di;
+	A.leading->n1 = (qq - 1)*(n[0] > 0)*n[0];
+	A.leading->n2 = (qq - 1)*(n[1] > 0)*n[1];
+	A.leading->n3 = (qq - 1)*(n[2] > 0)*n[2];
+	A.leading->n4 = (qq - 1)*(n[3] > 0)*n[3];
+	B.leading->n1 = (qq - 1)*(n[0] < 0)*(-n[0]);
+	B.leading->n2 = (qq - 1)*(n[1] < 0)*(-n[1]);
+	B.leading->n3 = (qq - 1)*(n[2] < 0)*(-n[2]);
+	B.leading->n4 = (qq - 1)*(n[3] < 0)*(-n[3]);
+	A.degree = A.leading->n1*d1 + A.leading->n2*d2 + 
+				A.leading->n3*d3 + A.leading->n4*d4;
+	B.degree = B.leading->n1*d1 + B.leading->n2*d2 + 
+				B.leading->n3*d3 + B.leading->n4*d4;
 	uit = pol_add(A, B);
 	free_tail(A.leading);
 	free_tail(B.leading);
