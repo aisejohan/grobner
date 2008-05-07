@@ -57,7 +57,6 @@ static struct exponents take_exponents(struct polynomial f)
 	uit.e1 = f.leading->n1;
 	uit.e2 = f.leading->n2;
 	uit.e3 = f.leading->n3;
-	uit.e4 = f.leading->n4;
 	return(uit);
 }
 
@@ -68,7 +67,6 @@ static struct exponents lcm(struct exponents *mon1, struct exponents *mon2)
 	uit.e1 = (mon1->e1 > mon2->e1) ? mon1->e1 : mon2->e1;
 	uit.e2 = (mon1->e2 > mon2->e2) ? mon1->e2 : mon2->e2;
 	uit.e3 = (mon1->e3 > mon2->e3) ? mon1->e3 : mon2->e3;
-	uit.e4 = (mon1->e4 > mon2->e4) ? mon1->e4 : mon2->e4;
 	return(uit);
 }
 
@@ -78,14 +76,13 @@ static unsigned int rel_prime(struct exponents *mon1, struct exponents *mon2)
 	if ((mon1->e1 > 0) && (mon2->e1 > 0)) return(0);
 	if ((mon1->e2 > 0) && (mon2->e2 > 0)) return(0);
 	if ((mon1->e3 > 0) && (mon2->e3 > 0)) return(0);
-	if ((mon1->e4 > 0) && (mon2->e4 > 0)) return(0);
 	return(1);
 }
 
 static unsigned int divides(struct exponents *mon1, struct exponents *mon2)
 {
 	return((mon1->e1 <= mon2->e1) && (mon1->e2 <= mon2->e2) && 
-	(mon1->e3 <= mon2->e3) && (mon1->e4 <= mon2->e4));
+	(mon1->e3 <= mon2->e3));
 }
 
 /* Smaller degree means smaller. Otherwise:				*
@@ -94,20 +91,18 @@ static unsigned int divides(struct exponents *mon1, struct exponents *mon2)
  * valuation of the coefficients being smaller means smaller.		*/
 static unsigned int smaller(struct exponents mon1, struct exponents mon2)
 {
-	if (d1*mon1.e1 + d2*mon1.e2 + d3*mon1.e3 + d4*mon1.e4 !=
-	d1*mon2.e1 + d2*mon2.e2 + d3*mon2.e3 + d4*mon2.e4) return((
-		d1*mon1.e1 + d2*mon1.e2 + d3*mon1.e3 + d4*mon1.e4 < 
-		d1*mon2.e1 + d2*mon2.e2 + d3*mon2.e3 + d4*mon2.e4));
+	if (d1*mon1.e1 + d2*mon1.e2 + d3*mon1.e3 !=
+	d1*mon2.e1 + d2*mon2.e2 + d3*mon2.e3) return((
+		d1*mon1.e1 + d2*mon1.e2 + d3*mon1.e3 < 
+		d1*mon2.e1 + d2*mon2.e2 + d3*mon2.e3));
 	/* Same as in kleiner...				*/
 #ifdef REVLEX_ORDER
-	if (mon1.e4 != mon2.e4) return((mon1.e4 > mon2.e4));
 	if (mon1.e3 != mon2.e3) return((mon1.e3 > mon2.e3));
 	if (mon1.e2 != mon2.e2) return((mon1.e2 > mon2.e2));
 #endif
 #ifdef LEX_ORDER
 	if (mon1.e1 != mon2.e1) return((mon1.e1 < mon2.e1));
 	if (mon1.e2 != mon2.e2) return((mon1.e2 < mon2.e2));
-	if (mon1.e3 != mon2.e3) return((mon1.e3 < mon2.e3));
 #endif
 	/* Means equal so not smaller. 				*/
 	return(0);
@@ -136,13 +131,6 @@ static void s_pol_terms(struct term *a, struct term *b, struct term *fterm, stru
 	} else {
 		a->n3 = gterm->n3 - fterm->n3;
 		b->n3 = 0;
-	}
-	if (fterm->n4 > gterm->n4) {
-		a->n4 = 0;
-		b->n4 = fterm->n4 - gterm->n4;
-	} else {
-		a->n4 = gterm->n4 - fterm->n4;
-		b->n4 = 0;
 	}
 	a->c = gterm->c;
 	b->c = fterm->c;
@@ -177,8 +165,8 @@ static void print_M(unsigned int mm, struct pair *MM)
 	for (i = 0; i + 1 <= mm; i++) {
 		printf("[%d, %d] ", MM[i].i, MM[i].j);
 		tmp = lcm(G.ee[MM[i].i], G.ee[MM[i].j]);
-		printf("[%d, %d, %d, %d] ", tmp.e1, tmp.e2, tmp.e3, tmp.e4);
-		printf("%d ", d1*tmp.e1 + d2*tmp.e2 + d3*tmp.e3 + d4*tmp.e4);
+		printf("[%d, %d, %d] ", tmp.e1, tmp.e2, tmp.e3);
+		printf("%d ", d1*tmp.e1 + d2*tmp.e2 + d3*tmp.e3);
 		printf("\n");
 	}
 	return;
@@ -202,28 +190,24 @@ static void print_V(unsigned int mm)
 /* Outputs G.							*/
 static unsigned int print_G(void)
 {
-	int i, s1 = 0, s2 = 0, s3 = 0, s4 = 0, success;
+	int i, s1 = 0, s2 = 0, s3 = 0, success;
 	struct exponents tmp;
 
 	for (i = 0; i + 1 <= G.len; i++) {
 		tmp = *G.ee[i];
-		printf("[%d, %d, %d, %d]  \t",
-			tmp.e1, tmp.e2, tmp.e3, tmp.e4);
-		printf("%d\t", d1*tmp.e1 + d2*tmp.e2 + d3*tmp.e3 + d4*tmp.e4);
+		printf("[%d, %d, %d]  \t",
+			tmp.e1, tmp.e2, tmp.e3);
+		printf("%d\t", d1*tmp.e1 + d2*tmp.e2 + d3*tmp.e3);
 		printf("%d ", number_terms(*G.ff[i]));
-		if (tmp.e1 + tmp.e2 + tmp.e3 == 0) {
-			printf(" <--- 4");
-			s4 = 1;
-		}
-		if (tmp.e1 + tmp.e2 + tmp.e4 == 0) {
+		if (tmp.e1 + tmp.e2 == 0) {
 			printf(" <--- 3");
 			s3 = 1;
 		}
-		if (tmp.e1 + tmp.e3 + tmp.e4 == 0) {
+		if (tmp.e1 + tmp.e3 == 0) {
 			printf(" <--- 2");
 			s2 = 1;
 		}
-		if (tmp.e2 + tmp.e3 + tmp.e4 == 0) {
+		if (tmp.e2 + tmp.e3 == 0) {
 			printf(" <--- 1");
 			s1 = 1;
 		}
@@ -231,41 +215,38 @@ static unsigned int print_G(void)
 		if (
 		(tmp.e1 != G.ff[i]->leading->n1) ||
 		(tmp.e2 != G.ff[i]->leading->n2) ||
-		(tmp.e3 != G.ff[i]->leading->n3) ||
-		(tmp.e4 != G.ff[i]->leading->n4)) {
+		(tmp.e3 != G.ff[i]->leading->n3)) {
 			printf("Wrong exponents!\n");
 			exit(1);
 		}
 #endif
 		printf("\n");
 	}
-	success = s1 + s2 + s3 + s4;
+	success = s1 + s2 + s3;
 	return(success);
 }
 
 static unsigned int test_G(void)
 {
-	int i, s1 = 0, s2 = 0, s3 = 0, s4 = 0, success;
+	int i, s1 = 0, s2 = 0, s3 = 0, success;
 	struct exponents tmp;
 
 	for (i = 0; i + 1 <= G.len; i++) {
 		tmp = *G.ee[i];
-		if (tmp.e1 + tmp.e2 + tmp.e3 == 0) s4 = 1;
-		if (tmp.e1 + tmp.e2 + tmp.e4 == 0) s3 = 1;
-		if (tmp.e1 + tmp.e3 + tmp.e4 == 0) s2 = 1;
-		if (tmp.e2 + tmp.e3 + tmp.e4 == 0) s1 = 1;
+		if (tmp.e1 + tmp.e2 == 0) s3 = 1;
+		if (tmp.e1 + tmp.e3 == 0) s2 = 1;
+		if (tmp.e2 + tmp.e3 == 0) s1 = 1;
 #ifdef KIJKEN
 		if (
 		(tmp.e1 != G.ff[i]->leading->n1) ||
 		(tmp.e2 != G.ff[i]->leading->n2) || 
-		(tmp.e3 != G.ff[i]->leading->n3) || 
-		(tmp.e4 != G.ff[i]->leading->n4)) {
+		(tmp.e3 != G.ff[i]->leading->n3)) {
 			printf("Wrong exponents!\n");
 			exit(1);
 		}
 #endif
 	}
-	success = s1 + s2 + s3 + s4;
+	success = s1 + s2 + s3;
 	return(success);
 }
 
@@ -323,7 +304,7 @@ int setup(int silent)
 	int i, j, k, ii, jj, old, new, check, epsilon;
 	struct pair tmppair;
 #ifndef TEST
-	struct polynomial myf1, myf2, myf3, myf4;
+	struct polynomial myf1, myf2, myf3;
 #else
 	int **n;
 #endif
@@ -340,7 +321,7 @@ int setup(int silent)
 	T.leading = NULL;
 
 #ifndef TEST
-	/* Initialize myf,myf1,myf2,myf3,myf4 */
+	/* Initialize myf,myf1,myf2,myf3 */
 	if (!silent) {
 		printf("\n\n");
 		myf = make_random(d, 1);
@@ -376,15 +357,6 @@ int setup(int silent)
 		free_tail(myf2.leading);
 		return(-1);
 	}
-	myf4 = deriv(myf, 4);
-	if (!myf4.leading) {
-		if (!silent) printf("Polynomial does not depend on w!\n");
-		free_tail(myf.leading);
-		free_tail(myf1.leading);
-		free_tail(myf2.leading);
-		free_tail(myf3.leading);
-		return(-1);
-	}
 	if (!silent) printf("\n");
 #endif
 
@@ -414,17 +386,15 @@ int setup(int silent)
 
 #ifndef TEST
 	/* Initialize G */
-	*G.ff[0] = copy_pol(myf4);
-	*G.ee[0] = take_exponents(myf4);
-	*G.ff[1] = copy_pol(myf3);
-	*G.ee[1] = take_exponents(myf3);
-	*G.ff[2] = copy_pol(myf2);
-	*G.ee[2] = take_exponents(myf2);
-	*G.ff[3] = copy_pol(myf1);
-	*G.ee[3] = take_exponents(myf1);
-	*G.ff[4] = copy_pol(myf);
-	*G.ee[4] = take_exponents(myf);
-	G.len = 5;
+	*G.ff[0] = copy_pol(myf3);
+	*G.ee[0] = take_exponents(myf3);
+	*G.ff[1] = copy_pol(myf2);
+	*G.ee[1] = take_exponents(myf2);
+	*G.ff[2] = copy_pol(myf1);
+	*G.ee[2] = take_exponents(myf1);
+	*G.ff[3] = copy_pol(myf);
+	*G.ee[3] = take_exponents(myf);
+	G.len = 4;
 #else
 	i = list_relations(&n);
 	j = 0;
@@ -522,7 +492,6 @@ int setup(int silent)
 					free_tail(myf1.leading);
 					free_tail(myf2.leading);
 					free_tail(myf3.leading);
-					free_tail(myf4.leading);
 #endif
 					return(-1);
 				}
@@ -652,8 +621,7 @@ int setup(int silent)
 		if ((G.ff[i]->leading) && 
 		((G.ff[i]->leading->n1 != G.ee[i]->e1) || 
 		 (G.ff[i]->leading->n2 != G.ee[i]->e2) || 
-		 (G.ff[i]->leading->n3 != G.ee[i]->e3) || 
-		 (G.ff[i]->leading->n4 != G.ee[i]->e4))) {
+		 (G.ff[i]->leading->n3 != G.ee[i]->e3))) {
 			printf("The following should have been zero: ");
 			print_pol(*G.ff[i]);
 			exit(1);
@@ -723,7 +691,6 @@ int setup(int silent)
 	free_tail(myf1.leading);
 	free_tail(myf2.leading);
 	free_tail(myf3.leading);
-	free_tail(myf4.leading);
 #endif
 	for (i = 0; i <= maxlength - 1; i++) {
 		free(V[i]);

@@ -43,12 +43,11 @@
  * can be much faster. */
 #define OLD_GROBNER
 
-#define d1	9
-#define d2	13
-#define d3	16
-#define d4	17
-#define d	81
-#define p	3
+#define d1	1
+#define d2	1
+#define d3	1
+#define d	3
+#define p	2
 #define r	40		/* Exponent. */
 #define q	27		/* Power of p. */
 
@@ -62,7 +61,6 @@ struct term {
 	unsigned int n1;
 	unsigned int n2;
 	unsigned int n3;
-	unsigned int n4;
 	struct term *next;
 };
 

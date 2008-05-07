@@ -37,7 +37,7 @@
  * The result may be the zero polynomial!		*/
 static struct polynomial make_initial_pol(unsigned int degree, int print)
 {
-	unsigned int a1, a2, a3, a4;
+	unsigned int a1, a2, a3;
 	int c;
 	struct polynomial uit;
 	struct term *uitterm;
@@ -53,9 +53,8 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 
 	for (a1 = 0; (d1*a1 <= degree);a1++) {
 	  for (a2 = 0; (d1*a1 + d2*a2 <= degree);a2++) {
-	    for (a3 = 0; (d1*a1 + d2*a2 + d3*a3 <= degree);a3++) {
-	      if ((degree - (a1*d1 + a2*d2 + a3*d3)) % d4 == 0) {
-		a4 = (degree - (a1*d1 + a2*d2 + a3*d3))/d4;
+	      if ((degree - (a1*d1 + a2*d2)) % d3 == 0) {
+		a3 = (degree - (a1*d1 + a2*d2))/d3;
 		/* Dummy input at first. */
 		c = 1;
 		/* Create the new term to be put in. */
@@ -63,7 +62,6 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 		uitterm->n1 = a1;
 		uitterm->n2 = a2;
 		uitterm->n3 = a3;
-		uitterm->n4 = a4;
 		uitterm->c = c;
 		ptrterm = &(uit.leading);
 		while ((*ptrterm) && (kleiner(uitterm, *ptrterm) == KLEINER)) {
@@ -73,7 +71,6 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 		*ptrterm = uitterm;
 		uitterm = NULL;
 	      }
-	    }
 	  }
 	}
 	if (print) {
@@ -82,14 +79,13 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 			a1 = uitterm->n1;
 			a2 = uitterm->n2;
 			a3 = uitterm->n3;
-			a4 = uitterm->n4;
 			c = 0;
 			printf("Coefficient of   ");
 			if (a1) {
 				printf("x^%d", a1);
 				c++;
 			}
-			if ((a1) && (a2 + a3 + a4)) {
+			if ((a1) && (a2 + a3)) {
 				printf(" * ");
 				c++;
 			}
@@ -97,20 +93,12 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 				printf("y^%d", a2);
 				c++;
 			}
-			if ((a2) && (a3 + a4)) {
+			if ((a2) && (a3)) {
 				printf(" * ");
 				c++;
 			}
 			if (a3) {
 				printf("z^%d", a3);
-				c++;
-			}
-			if ((a3) && (a4)) {
-				printf(" * ");
-				c++;
-			}
-			if (a4) {
-				printf("w^%d", a4);
 				c++;
 			}
 			while (8 - c) {
@@ -152,12 +140,11 @@ int __mm(int e, int i, int c)
 	return(c);
 }
 
-int mm(int e1, int e2, int e3, int e4, int i1, int i2, int i3, int i4, int c)
+int mm(int e1, int e2, int e3, int i1, int i2, int i3, int c)
 {
 	c = __mm(e1, i1, c);
 	c = __mm(e2, i2, c);
 	c = __mm(e3, i3, c);
-	c = __mm(e4, i4, c);
 
 	return(c);
 }
@@ -176,7 +163,7 @@ int is_square(int c)
 
 int is_min(unsigned int nr, int *coeff, struct polynomial f)
 {
-	int i, i1, i2, i3, i4, t, different;
+	int i, i1, i2, i3, t, different;
 	struct term *tt;
 
 	i1 = 1;
@@ -185,14 +172,12 @@ int is_min(unsigned int nr, int *coeff, struct polynomial f)
 	  while (i2 < p) {
 	    i3 = 1;
 	    while (i3 < p) {
-	      i4 = 1;
-	      while (i4 < p) {
 		tt = f.leading;
 		different = 0;
 		i = 0;
 		do {
-			t = mm(tt->n1, tt->n2, tt->n3, tt->n4,
-				i1, i2, i3, i4, coeff[i]);
+			t = mm(tt->n1, tt->n2, tt->n3,
+				i1, i2, i3, coeff[i]);
 			if (t != coeff[i]) {
 				 different = (t < coeff[i]) - (t > coeff[i]);
 			}
@@ -200,9 +185,7 @@ int is_min(unsigned int nr, int *coeff, struct polynomial f)
 			tt = tt->next;
 		} while (tt);
 		if (different > 0) return(0);
-		i4++;
-	      }
-	      i3++;
+	      	i3++;
 	    }
 	    i2++;
 	  }
@@ -252,8 +235,8 @@ int main()
 			retry = -1;
 		}
 
-		/* retry == 4 means quasi-smooth */
-		if (retry == 4) {
+		/* retry == 3 means quasi-smooth */
+		if (retry == 3) {
 			for (i = 0; i + 1 <= nr; i++) {
 				printf("%d ", coeff[i]);
 			}

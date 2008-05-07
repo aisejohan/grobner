@@ -62,15 +62,13 @@ void set_seed(unsigned int zaadje)
 
 unsigned int count_sum(unsigned int degree)
 {
-	unsigned int count, a1, a2, a3;
+	unsigned int count, a1, a2;
+
 	count = 0;
 	for (a1 = 0; (d1*a1 <= degree); a1++) {
 		for (a2 = 0; (d1*a1 + d2*a2 <= degree); a2++) {
-			for (a3 = 0; (d1*a1 + d2*a2 + d3*a3 <= degree); a3++) {
-				if ((degree - (a1*d1 + a2*d2 + a3*d3)) % d4
-									== 0) {
+			if ((degree - (a1*d1 + a2*d2)) % d3 == 0) {
 					count++;
-				}
 			}
 		}
 	}
@@ -79,15 +77,14 @@ unsigned int count_sum(unsigned int degree)
 
 void print_sum(unsigned int degree)
 {
-	unsigned int a1, a2, a3;
+	unsigned int a1, a2;
+
 	for (a1 = 0; (d1*a1 <= degree); a1++) {
 	  for (a2 = 0; (d1*a1 + d2*a2 <= degree); a2++) {
-	    for (a3 = 0; (d1*a1 + d2*a2 + d3*a3 <= degree); a3++) {
-	      if ((degree - (a1*d1 + a2*d2 + a3*d3)) % d4 == 0) {
-		printf("[%d, %d, %d, %d]\n", a1, a2, a3,
-				(degree - (a1*d1 + a2*d2 + a3*d3))/d4);
+	      if ((degree - (a1*d1 + a2*d2)) % d3 == 0) {
+		printf("[%d, %d, %d]\n", a1, a2,
+				(degree - (a1*d1 + a2*d2))/d3);
 	      }
-	    }
 	  }
 	}
 	return;
@@ -97,7 +94,7 @@ void print_sum(unsigned int degree)
  * The result may be the zero polynomial!		*/
 struct polynomial make_random(unsigned int degree, int print)
 {
-	unsigned int a1, a2, a3, a4;
+	unsigned int a1, a2, a3;
 	int c;
 	struct polynomial uit;
 	struct term *uitterm;
@@ -118,9 +115,8 @@ struct polynomial make_random(unsigned int degree, int print)
 #endif
 	for (a1 = 0; (d1*a1 <= degree); a1++) {
 	  for (a2 = 0; (d1*a1 + d2*a2 <= degree); a2++) {
-	    for (a3 = 0; (d1*a1 + d2*a2 + d3*a3 <= degree); a3++) {
-	      if ((degree - (a1*d1 + a2*d2 + a3*d3)) % d4 == 0) {
-		a4 = (degree - (a1*d1 + a2*d2 + a3*d3))/d4;
+	      if ((degree - (a1*d1 + a2*d2)) % d3 == 0) {
+		a3 = (degree - (a1*d1 + a2*d2))/d3;
 #ifdef INPUT_F
 		/* Dummy input at first. */
 		c = 1;
@@ -137,7 +133,6 @@ struct polynomial make_random(unsigned int degree, int print)
 		uitterm->n1 = a1;
 		uitterm->n2 = a2;
 		uitterm->n3 = a3;
-		uitterm->n4 = a4;
 		c = c % prime;
 		if (c < 0) c = c + prime;
 		uitterm->c = c;
@@ -149,7 +144,6 @@ struct polynomial make_random(unsigned int degree, int print)
 		*ptrterm = uitterm;
 		uitterm=NULL;
 	      }
-	    }
 	  }
 	}
 	uitterm = uit.leading;
@@ -157,7 +151,6 @@ struct polynomial make_random(unsigned int degree, int print)
 		a1 = uitterm->n1;
 		a2 = uitterm->n2;
 		a3 = uitterm->n3;
-		a4 = uitterm->n4;
 if (print) {
 		c = 0;
 		printf("Coefficient of   ");
@@ -165,7 +158,7 @@ if (print) {
 			printf("x^%d", a1);
 			c++;
 		}
-		if ((a1) && (a2+a3+a4)) {
+		if ((a1) && (a2+a3)) {
 			printf(" * ");
 			c++;
 		}
@@ -173,20 +166,12 @@ if (print) {
 			printf("y^%d", a2);
 			c++;
 		}
-		if ((a2) && (a3 + a4)) {
+		if ((a2) && (a3)) {
 			printf(" * ");
 			c++;
 		}
 		if (a3) {
 			printf("z^%d", a3);
-			c++;
-		}
-		if ((a3) && (a4)) {
-			printf(" * ");
-			c++;
-		}
-		if (a4) {
-			printf("w^%d", a4);
 			c++;
 		}
 		while (8 - c) {
@@ -259,7 +244,6 @@ struct polynomial frobenius(struct polynomial f)
 		(*ptrterm)->n1 = prime*fterm->n1;
 		(*ptrterm)->n2 = prime*fterm->n2;
 		(*ptrterm)->n3 = prime*fterm->n3;
-		(*ptrterm)->n4 = prime*fterm->n4;
 		ptrterm = &((*ptrterm)->next);
 		fterm = fterm->next;
 	}
@@ -291,7 +275,6 @@ struct polynomial deriv(struct polynomial f, unsigned int i)
 				(*ptrterm)->n1 = fterm->n1 - 1;
 				(*ptrterm)->n2 = fterm->n2;
 				(*ptrterm)->n3 = fterm->n3;
-				(*ptrterm)->n4 = fterm->n4;
 				ptrterm = &((*ptrterm)->next);
 			}
 			fterm = fterm->next;
@@ -310,7 +293,6 @@ struct polynomial deriv(struct polynomial f, unsigned int i)
 				(*ptrterm)->n1 = fterm->n1;
 				(*ptrterm)->n2 = fterm->n2 - 1;
 				(*ptrterm)->n3 = fterm->n3;
-				(*ptrterm)->n4 = fterm->n4;
 				ptrterm = &((*ptrterm)->next);
 			}
 			fterm = fterm->next;
@@ -329,32 +311,12 @@ struct polynomial deriv(struct polynomial f, unsigned int i)
 				(*ptrterm)->n1 = fterm->n1;
 				(*ptrterm)->n2 = fterm->n2;
 				(*ptrterm)->n3 = fterm->n3 - 1;
-				(*ptrterm)->n4 = fterm->n4;
 				ptrterm = &((*ptrterm)->next);
 			}
 			fterm = fterm->next;
 		}
 		return(uit);
-		
-		case 4:
-		uit.degree = (f.degree > d4) ? (f.degree - d4) : 0;
-		ptrterm = &(uit.leading);
-		while (fterm) {
-			c = fterm->n4 % prime;
-			c = sc_mul(c, fterm->c);
-			if (c) {
-				make_term(ptrterm);
-				(*ptrterm)->c = c;
-				(*ptrterm)->n1 = fterm->n1;
-				(*ptrterm)->n2 = fterm->n2;
-				(*ptrterm)->n3 = fterm->n3;
-				(*ptrterm)->n4 = fterm->n4 - 1;
-				ptrterm = &((*ptrterm)->next);
-			}
-			fterm = fterm->next;
-		}
-		return(uit);
-		
+
 		default:
 		printf("Wrong again honey!");
 		exit(1);
@@ -430,25 +392,6 @@ void rep_deriv(struct polynomial *f, unsigned int i)
 		}
 		return;
 
-		case 4:
-		f->degree = (f->degree > d4) ? (f->degree - d4) : 0;
-		while (fterm) {
-			c = fterm->n4 % prime;
-			c = sc_mul(c, fterm->c);
-			if (c) {
-				fterm->c = c;
-				fterm->n4 = fterm->n4 - 1;
-				*ptrterm = fterm;
-				ptrterm = &(fterm->next);
-				fterm = fterm->next;
-			} else {
-				*ptrterm = fterm->next;
-				free_term(fterm);
-				fterm = *ptrterm;
-			}
-		}
-		return;
-
 		default:
 		printf("Wrong again honey!");
 		exit(1);
@@ -460,6 +403,9 @@ int list_relations(int ***n)
 {
 	int i;
 	int nn[3][4] = {{-1, -1, 1, 0}, {0, -1, -2, 2}, {-4, 3, -1, 1}};
+
+	printf("FIXME!\n");
+	exit(1);
 
 	*n = (int **)malloc(3*sizeof(int *));
 	i = 0;
@@ -493,15 +439,13 @@ struct polynomial q_equation(int *n, unsigned int a)
 	A.leading->n1 = (qq - 1)*(n[0] > 0)*n[0];
 	A.leading->n2 = (qq - 1)*(n[1] > 0)*n[1];
 	A.leading->n3 = (qq - 1)*(n[2] > 0)*n[2];
-	A.leading->n4 = (qq - 1)*(n[3] > 0)*n[3];
 	B.leading->n1 = (qq - 1)*(n[0] < 0)*(-n[0]);
 	B.leading->n2 = (qq - 1)*(n[1] < 0)*(-n[1]);
 	B.leading->n3 = (qq - 1)*(n[2] < 0)*(-n[2]);
-	B.leading->n4 = (qq - 1)*(n[3] < 0)*(-n[3]);
 	A.degree = A.leading->n1*d1 + A.leading->n2*d2 + 
-				A.leading->n3*d3 + A.leading->n4*d4;
+				A.leading->n3*d3;
 	B.degree = B.leading->n1*d1 + B.leading->n2*d2 + 
-				B.leading->n3*d3 + B.leading->n4*d4;
+				B.leading->n3*d3;
 	uit = pol_add(A, B);
 	free_tail(A.leading);
 	free_tail(B.leading);

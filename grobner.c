@@ -37,8 +37,7 @@ static inline int deelbaar(struct term *mon1, struct term *mon2)
 {
 	return(((mon1->n1 <= mon2->n1) &&
 		(mon1->n2 <= mon2->n2) &&
-		(mon1->n3 <= mon2->n3) &&
-		(mon1->n4 <= mon2->n4)));
+		(mon1->n3 <= mon2->n3)));
 }
 
 
@@ -93,7 +92,6 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 				mon.n1 = ppp->leading->n1 - vh[i]->leading->n1;
 				mon.n2 = ppp->leading->n2 - vh[i]->leading->n2;
 				mon.n3 = ppp->leading->n3 - vh[i]->leading->n3;
-				mon.n4 = ppp->leading->n4 - vh[i]->leading->n4;
 
 				pppterm = ppp->leading;
 				ppp->leading = ppp->leading->next;
@@ -171,7 +169,6 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 				ppp->leading->n1 -= vh[i]->leading->n1;
 				ppp->leading->n2 -= vh[i]->leading->n2;
 				ppp->leading->n3 -= vh[i]->leading->n3;
-				ppp->leading->n4 -= vh[i]->leading->n4;
 				ppp->leading->c = c;
 
 				ppp->leading = ppp->leading->next;
@@ -184,8 +181,6 @@ gen_division(struct polynomial *pp, unsigned int ss, struct polynomial **vh)
 						vh_rest[i].leading->n2;
 					test.n3 = (*save)->n3 +
 						vh_rest[i].leading->n3;
-					test.n4 = (*save)->n4 +
-						vh_rest[i].leading->n4;
 					first = 0;
 				}
 
@@ -246,7 +241,6 @@ zero_on_division(struct polynomial ppp, unsigned int ss, struct polynomial **vh)
 				mon.n1 = pp.leading->n1 - vh[i]->leading->n1;
 				mon.n2 = pp.leading->n2 - vh[i]->leading->n2;
 				mon.n3 = pp.leading->n3 - vh[i]->leading->n3;
-				mon.n4 = pp.leading->n4 - vh[i]->leading->n4;
 				if (tmp[i].leading) {
 					times_term(mon, *(vh[i]), &(tmp[i]));
 				} else {

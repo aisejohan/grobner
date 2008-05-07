@@ -83,7 +83,6 @@ void copy_term(struct term *mon1, struct term *mon2)
 	mon2->n1 = mon1->n1;
 	mon2->n2 = mon1->n2;
 	mon2->n3 = mon1->n3;
-	mon2->n4 = mon1->n4;
 }
 
 /* This frees memory starting with mon.					*
@@ -164,7 +163,6 @@ void print_pol(struct polynomial f)
 			if (fterm->n1) printf("*x^%d", fterm->n1);
 			if (fterm->n2) printf("*y^%d", fterm->n2);
 			if (fterm->n3) printf("*z^%d", fterm->n3);
-			if (fterm->n4) printf("*w^%d", fterm->n4);
 			if (fterm->next) printf(" + ");
 			else printf("\n");
 		} else {
@@ -236,7 +234,6 @@ struct polynomial pol_add(struct polynomial f, struct polynomial g)
 				(*ptrterm)->n1 = fterm->n1;
 				(*ptrterm)->n2 = fterm->n2;
 				(*ptrterm)->n3 = fterm->n3;
-				(*ptrterm)->n4 = fterm->n4;
 				ptrterm = &((*ptrterm)->next);
 			}
 			fterm = fterm->next;
@@ -462,7 +459,7 @@ void times_term(struct term t, struct polynomial f, struct polynomial *g)
 {
 	struct term *fterm, *gterm;
 
-	g->degree = f.degree + d1*t.n1 + d2*t.n2 + d3*t.n3 + d4*t.n4;
+	g->degree = f.degree + d1*t.n1 + d2*t.n2 + d3*t.n3;
 	gterm = g->leading;
 	fterm = f.leading;
 	while (fterm) {
@@ -470,7 +467,6 @@ void times_term(struct term t, struct polynomial f, struct polynomial *g)
 		gterm->n1 = t.n1 + fterm->n1;
 		gterm->n2 = t.n2 + fterm->n2;
 		gterm->n3 = t.n3 + fterm->n3;
-		gterm->n4 = t.n4 + fterm->n4;
 		fterm = fterm->next;
 		gterm = gterm->next;
 	}
@@ -488,7 +484,7 @@ make_times_term(struct term t, struct polynomial f)
 	struct polynomial uit;
 	uit.leading = NULL;
 
-	uit.degree = f.degree + d1*t.n1 + d2*t.n2 + d3*t.n3 + d4*t.n4;
+	uit.degree = f.degree + d1*t.n1 + d2*t.n2 + d3*t.n3;
 	ptrterm = &(uit.leading);
 	fterm = f.leading;
 	while (fterm) {
@@ -497,7 +493,6 @@ make_times_term(struct term t, struct polynomial f)
 		(*ptrterm)->n1 = t.n1 + fterm->n1;
 		(*ptrterm)->n2 = t.n2 + fterm->n2;
 		(*ptrterm)->n3 = t.n3 + fterm->n3;
-		(*ptrterm)->n4 = t.n4 + fterm->n4;
 		fterm = fterm->next;
 		ptrterm = &((*ptrterm)->next);
 	}
