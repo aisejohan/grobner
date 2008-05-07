@@ -31,6 +31,7 @@
 #include "grobner.h"
 #include "helper.h"
 #include "compute.h"
+#include "delta.h"
 
 /* Makes a random polynomial of degree degree.		*
  * The result may be the zero polynomial!		*/
@@ -258,6 +259,9 @@ int main()
 			}
 			printf("  %d", G.len);
 			printf("\n");
+			for (i = 0; i <= 4*d - d1 - d2 - d3 - d4; i++) {
+				check_flatness(i);
+			}
 		}
 
 		if (retry >= 0) {
