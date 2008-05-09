@@ -29,7 +29,3 @@ input_pol:
 output_pol:
 	gcc -DINPUT_F -DOUTPUT_LIST -Wall -c basis.c  compute.c  delta.c  grobner.c  helper.c  pol.c  reduce.c  scalar.c
 	gcc -Wall -o tester basis.o  compute.o  delta.o  grobner.o  helper.o  pol.o  reduce.o  scalar.o
-
-shorter:
-	gcc -DTEST -Wall -O3 -march=nocona -c main.c shorter.c grobner.c helper.c pol.c scalar.c
-	gcc -O3 -march=nocona -o tester main.o shorter.o grobner.o helper.o pol.o scalar.o
