@@ -32,7 +32,6 @@
 #include "grobner.h"
 #include "helper.h"
 #include "compute.h"
-#include "reduce.h"
 
 /* The rule is that 0<=i<j<=G.len always. 	*
  * Since maxlength is hopefully never bigger	*
