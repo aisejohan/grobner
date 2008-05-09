@@ -130,7 +130,7 @@ void next_one(unsigned int nr, int *coeff)
 {
 	int i=0;
 
-	while ((coeff[i] == p-1) && (i < nr)) i++;
+	while ((i < nr) && (coeff[i] == p-1)) i++;
 	if (i == nr) exit(0);
 	coeff[i]++;
 	while (i > 0) {
