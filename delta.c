@@ -33,62 +33,12 @@
 #include "compute.h"
 #include "delta.h"
 
-/* Computes p*Delta.							*
- * This will only be run once!						*/
-struct polynomial compute_delta(void)
-{
-	int i;
-	struct polynomial A, B, C;
-	A.leading = NULL;
-	B.leading = NULL;
-	C.leading = NULL;
-
-	A = copy_pol(myf);
-	B = copy_pol(myf);
-	for (i = 2; i <= p; i++)
-	{
-		C = pol_mult(A, B);
-		free_tail(B.leading);
-		B = C;
-		C.leading = NULL;
-		C.degree = 0;
-	}
-	free_tail(A.leading);
-	A.leading = NULL;
-	A.degree = 0;
-	A = frobenius(myf);
-
-	/* Replace A by negative. */
-	times_int(-1, &A);
-
-	/* Add -F(f) + f^p */
-	C = pol_add(A, B);
-
-	free_tail(A.leading);
-	free_tail(B.leading);
-	
-	return(C);
-}
-
-/* This functions checks flatness in degree degree.			*
- * Returns: 								*
- * 	-1 if flat but not usable,					*
- * 	-2 if not flat,and 						*
- * 	the dimension if flat.						*
- * 									*
- * Meaning of the counts:						*
- * 		count1 = is sometimes too small				*
- * 		count2 = is sometimes too large				*
- * 		goodcount = what you are supposed to get in char 0.	*
- * 		count = the correct count using the ideal		*
- * If count1 = count2 = goodcount, then you are flat for sure. If this	*
- * doesn't happen then we do an extra check and produce the correct	*
- * count, called count. This function is ridiculously complicated due	*
- * to our choice of ordering of terms.					*/
+/* This functions checks the number of left over monomials in degree	*
+ * degree and compares it to what you would have gotten in char 0.	*/
 int check_flatness(unsigned int degree)
 {
 	int i, b1, b2;
-	int count, count1, goodcount;
+	int count, goodcount;
 	unsigned int a1, a2, a3;
 	struct term tmp, least;
 	struct polynomial T, TT;
@@ -97,11 +47,7 @@ int check_flatness(unsigned int degree)
 	T.leading = NULL;
 	TT.leading = NULL;
 	
-	if (!count_sum(degree)) {
-		return(0);
-	}
 	count = 0;
-	count1 = 0;
 	goodcount = count_sum(degree);
 	
 	if (degree >= d - d1) 
@@ -132,16 +78,16 @@ int check_flatness(unsigned int degree)
 				b1 = 1;
 			}
 		}
-		if (!b1) count1++;
+		if (!b1) count++;
 	      }
 	  }
 	}
-	if (count1 != goodcount) {
-		printf("Here we have degree %d, count1 %d"
+	if (count != goodcount) {
+		printf("Here we have degree %d, count %d"
 		", and goodcount %d\n",
-		degree, count1, goodcount);
+		degree, count, goodcount);
 	}
-	return(goodcount);
+	return(count);
 }
 
 /* Finds the basis of terms in degree degree.			*
@@ -208,5 +154,3 @@ struct term **find_basis(unsigned int degree, int blen)
 	}
 	return(tt);
 }
-
-

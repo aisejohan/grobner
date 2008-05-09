@@ -20,6 +20,5 @@
  *	Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *									*/
-struct polynomial compute_delta(void);
 int check_flatness(unsigned int degree);
 struct term **find_basis(unsigned int degree, int blen);
