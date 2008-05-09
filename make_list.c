@@ -250,15 +250,9 @@ int main()
 			for (i = 0; i + 1 <= G.len; i++) {
 				free_tail(G.ff[i]->leading);
 			}
-			for (i = 0; i + 1 <= maxlength; i++) {
-				free(G.ff[i]);
-				free(G.ee[i]);
-			}
-			free(G.ff);
-			free(G.ee);
 		}
 		retry = 1;
 	}
 	
-	exit(13);
+	exit(0);
 }

@@ -48,6 +48,90 @@ struct polynomial myf;
 
 /* Variables only used in this file.			*/
 static unsigned char **V;
+static struct pair *M;
+static struct pair *Mold;
+static struct pair *Mnew;
+static int M_len = 0;
+static int G_len = 0;
+
+void allocate_GVMnew(int at_least)
+{
+	int old, i;
+
+	if (G_len > at_least) return;
+
+	if (G_len == 0) {
+		G.ff = NULL;
+		G.ee = NULL;
+		V = NULL;
+		Mnew = NULL;
+		old = 0;
+		G_len = maxlength;
+	} else {
+		old = G_len;
+		G_len = 2*G_len;
+	}
+	if (G_len < at_least + 2) G_len = at_least + 1;
+	printf("Allocate G_len %d elements and old = %d.\n", G_len, old);
+
+	/* Allocate memory for G */
+	G.ff = (struct polynomial **)
+			realloc(G.ff, G_len*sizeof(struct polynomial *));
+	if (!G.ff) {
+		perror("Malloc failed!");
+		exit(1);
+	}
+	G.ee = (struct exponents **)
+			realloc(G.ee, G_len*sizeof(struct exponents *));
+	if (!G.ee) {
+		perror("Malloc failed!");
+		exit(1);
+	}
+	for (i = old; i < G_len; i++) {
+		G.ff[i] = NULL;
+		make_pol(&G.ff[i]);
+		G.ee[i] = (struct exponents *)
+				malloc(sizeof(struct exponents));
+		if (!G.ee[i]) {
+			perror("Malloc failed!");
+			exit(1);
+		}
+	}
+	V = (unsigned char **) realloc(V, G_len*sizeof(unsigned char *));
+	if (!V) {
+		perror("Malloc failed.\n");
+		exit(1);
+	}
+	for (i = 0; i < old; i++) {
+		V[i] = realloc(V[i], G_len*sizeof(unsigned char));
+	}
+	for (i = old; i < G_len; i++) {
+		V[i] = malloc(G_len*sizeof(unsigned char));
+		if (!V[i]) {
+			perror("Malloc failed.\n");
+			exit(1);
+		}
+	}
+	Mnew = (struct pair *) realloc(Mnew, G_len*sizeof(struct pair));
+}
+
+void allocate_MMold(int at_least)
+{
+	if (M_len > at_least) return;
+
+	if (M_len == 0) {
+		M_len = maxlength*maxlength;
+		M = NULL;
+		Mold = NULL;
+	} else {
+		M_len = 2*M_len;
+	}
+	if (M_len < at_least + 2) M_len = at_least + 1;
+	printf("Allocate M_len = %d elements.\n", M_len);
+	M = (struct pair *) realloc(M, M_len*sizeof(struct pair));
+	Mold = (struct pair *) realloc(Mold, M_len*sizeof(struct pair));
+}
+
 
 /* Note that this produces a segfault or hangs if either	*
  * f.leading is NULL or if f.leading->c == 0.			*/
@@ -303,24 +387,16 @@ int setup(int silent)
 {
 	int i, j, k, ii, jj, old, new, check, epsilon;
 	struct pair tmppair;
-#ifndef TEST
-	struct polynomial myf1, myf2, myf3;
-#else
-	int **n;
-#endif
 	struct polynomial SS, T;
 	struct polynomial *Tff;
 	struct exponents *Tee;
 	struct polynomial **bb;
-	struct pair M[maxlength*maxlength];
-	struct pair Mold[maxlength*maxlength];
-	struct pair Mnew[maxlength];
+	struct polynomial myf1, myf2, myf3;
 	unsigned int m, mold, mnew;
 	struct exponents lcm_new, lcm_old;
 	SS.leading = NULL;
 	T.leading = NULL;
 
-#ifndef TEST
 	/* Initialize myf,myf1,myf2,myf3 */
 	if (!silent) {
 		printf("\n\n");
@@ -358,33 +434,11 @@ int setup(int silent)
 		return(-1);
 	}
 	if (!silent) printf("\n");
-#endif
-
-	/* Allocate memory for G */
-	G.ff = (struct polynomial **)
-			malloc(maxlength*sizeof(struct polynomial *));
-	if (!G.ff) {
-		perror("Malloc failed!");
-		exit(1);
-	}
-	G.ee = (struct exponents **)
-			malloc(maxlength*sizeof(struct exponents *));
-	if (!G.ee) {
-		perror("Malloc failed!");
-		exit(1);
-	}
-	for (i = 0; i + 1 <= maxlength; i++) {
-		G.ff[i] = NULL;
-		make_pol(&G.ff[i]);
-		G.ee[i] = (struct exponents *)
-				malloc(sizeof(struct exponents));
-		if (!G.ee[i]) {
-			perror("Malloc failed!");
-			exit(1);
-		}
-	}
-
-#ifndef TEST
+	
+	/* Allocate memory for G, V, M, Mold, Mnew */
+	allocate_GVMnew(10);
+	allocate_MMold(100);
+	
 	/* Initialize G */
 	*G.ff[0] = copy_pol(myf3);
 	*G.ee[0] = take_exponents(myf3);
@@ -395,40 +449,12 @@ int setup(int silent)
 	*G.ff[3] = copy_pol(myf);
 	*G.ee[3] = take_exponents(myf);
 	G.len = 4;
-#else
-	i = list_relations(&n);
-	j = 0;
-	while (j < i) {
-		*G.ff[j] = q_equation(n[j], 4);
-		*G.ee[j] = take_exponents(*G.ff[j]);
-		j++;
-	}
-	*G.ff[i] = make_random(d, 0);
-	*G.ee[i] = take_exponents(*G.ff[i]);
-	i++;
-	*G.ff[i] = make_random(2*d, 0);
-	*G.ee[i] = take_exponents(*G.ff[i]);
-	i++;
-	G.len = i;
-	print_G();
-#endif
 
 	sort_G();
 
-	V = (unsigned char **) malloc(maxlength*sizeof(unsigned char *));
-	if (!V) {
-		perror("Malloc failed.\n");
-		exit(1);
-	}
 	/* Initialize V */
-	for (i = 0; i + 1 <= maxlength; i++) {
-		V[i] = (unsigned char *)
-			malloc(maxlength*sizeof(unsigned char));
-		if (!(V[i])) {
-			perror("Malloc failed!\n");
-			exit(1);
-		}
-		for (j = 0; j + 1 <= maxlength; j++) {
+	for (i = 0; i + 1 <= G.len; i++) {
+		for (j = 0; j + 1 <= G.len; j++) {
 			V[i][j] = 0;
 		}
 	}
@@ -473,27 +499,8 @@ int setup(int silent)
 			if ((SS.leading) &&
 					(!zero_on_division(SS, G.len, G.ff))) {
 				G.len++;		
-				if (G.len > maxlength) {
-					printf("Please increase maxlength.\n");
-					free_tail(SS.leading);
-					for (i = 0; i + 1 + 1 <= G.len; i++) {
-					  free_tail(G.ff[i]->leading);
-					}
-					for (i = 0; i + 1 <= maxlength; i++) {
-					  free(G.ff[i]);
-					  free(G.ee[i]);
-					  free(V[i]);
-					}
-					free(G.ff);
-					free(G.ee);
-					free(V);
-#ifndef TEST
-					free_tail(myf.leading);
-					free_tail(myf1.leading);
-					free_tail(myf2.leading);
-					free_tail(myf3.leading);
-#endif
-					return(-1);
+				if (G.len > G_len) {
+					allocate_GVMnew(G.len);
 				}
 				check = 2; /* success. */
 			} else {
@@ -511,7 +518,11 @@ int setup(int silent)
 			*G.ff[G.len - 1] = SS;
 			*G.ee[G.len - 1] = take_exponents(SS); /* Done updating G. */
 
-			/* Update M. */
+			/* Update M and V. */
+			for (i = 0; i < G.len; i++) {
+				V[G.len - 1][i] = 0;
+				V[i][G.len - 1] = 0;
+			}
 
 			/* List the new pairs in order in Mnew. */
 			mnew = 0;
@@ -520,7 +531,8 @@ int setup(int silent)
 					lcm_new = lcm(G.ee[i], G.ee[G.len - 1]);
 					j = 0;
 					while ((j + 1 <= mnew) &&
-						(smaller(lcm_new, lcm(G.ee[Mnew[j].i],
+						(smaller(lcm_new,
+							lcm(G.ee[Mnew[j].i],
 							G.ee[Mnew[j].j])))) j++;
 					if (j == mnew) {
 						mnew = mnew + 1;
@@ -552,6 +564,7 @@ int setup(int silent)
 				new = 0;
 				lcm_new = lcm(G.ee[Mnew[new].i], G.ee[Mnew[new].j]);
 				m = mold + mnew;
+				allocate_MMold(m);
 				i = 0;
 				while ((new + 1 <= mnew) && (old + 1 <= mold)) {
 					if (smaller(lcm_new, lcm_old)) {
@@ -667,7 +680,6 @@ int setup(int silent)
 	/* Recheck all S-pols reduce to zero! */
 	printf("Checking S-pols.\n");
 	for (i = 0; i <= G.len - 1; i++) {
-		printf("Doing %d out of %d.\n", i+1, G.len);
 		for (j = i + 1; j <= G.len - 1; j++) {
 			SS = s_pol(*G.ff[i], *G.ff[j]);
 			if (zero_on_division(SS, G.len, G.ff)) {
@@ -687,14 +699,8 @@ int setup(int silent)
 #endif /* KIJKEN */
 
 	/* Success. */
-#ifndef TEST
 	free_tail(myf1.leading);
 	free_tail(myf2.leading);
 	free_tail(myf3.leading);
-#endif
-	for (i = 0; i <= maxlength - 1; i++) {
-		free(V[i]);
-	}
-	free(V);
 	return(test_G());
 }

@@ -51,7 +51,7 @@
 #define r	40		/* Exponent. */
 #define q	27		/* Power of p. */
 
-#define maxlength	1000
+#define maxlength	20
 
 /* This type will be used for our scalars. */
 typedef unsigned short int scalar;
