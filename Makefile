@@ -8,7 +8,7 @@ clean:
 
 debug:
 	gcc -g -DKIJKEN -Wall -pedantic -std=c99 -c main.c  compute.c  grobner.c  helper.c  pol.c  scalar.c
-	gcc -g -Wall -o tester main.o  compute.o  grobner.o  helper.o  pol.o  scalar.o
+	gcc -g -Wall -o *.o
 
 profiler:
 	gcc -g -pg -march=nocona -Wall -c main.c  compute.c  grobner.c  helper.c  pol.c  scalar.c
@@ -21,6 +21,10 @@ test:
 make_list:
 	gcc -O3 -DLIST_F -Wall -c make_list.c delta.c compute.c grobner.c helper.c pol.c scalar.c
 	gcc -O3 -o tester make_list.o delta.o compute.o grobner.o helper.o pol.o scalar.o
+
+random_list:
+	gcc -O3 -DLIST_F -Wall -c random_list.c delta.c compute.c grobner.c helper.c pol.c scalar.c
+	gcc -O3 -o tester random_list.o delta.o compute.o grobner.o helper.o pol.o scalar.o
 
 input_pol:
 	gcc -DINPUT_F -Wall -O3 -march=nocona -c main.c compute.c delta.c grobner.c  helper.c pol.c scalar.c
