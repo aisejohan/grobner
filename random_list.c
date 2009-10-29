@@ -37,7 +37,7 @@
  * The result may be the zero polynomial!		*/
 static struct polynomial make_initial_pol(unsigned int degree, int print)
 {
-	unsigned int a1, a2, a3, a4;
+	unsigned int a1, a2, a3;
 	int c;
 	struct polynomial uit;
 	struct term *uitterm;
@@ -53,9 +53,8 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 
 	for (a1 = 0; (d1*a1 <= degree);a1++) {
 	  for (a2 = 0; (d1*a1 + d2*a2 <= degree);a2++) {
-	    for (a3 = 0; (d1*a1 + d2*a2 + d3*a3 <= degree);a3++) {
-	      if ((degree - (a1*d1 + a2*d2 + a3*d3)) % d4 == 0) {
-		a4 = (degree - (a1*d1 + a2*d2 + a3*d3))/d4;
+	      if ((degree - (a1*d1 + a2*d2)) % d3 == 0) {
+		a3 = (degree - (a1*d1 + a2*d2))/d3;
 		/* Dummy input at first. */
 		c = 1;
 		/* Create the new term to be put in. */
@@ -63,7 +62,6 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 		uitterm->n1 = a1;
 		uitterm->n2 = a2;
 		uitterm->n3 = a3;
-		uitterm->n4 = a4;
 		uitterm->c = c;
 		ptrterm = &(uit.leading);
 		while ((*ptrterm) && (kleiner(uitterm, *ptrterm) == KLEINER)) {
@@ -73,7 +71,6 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 		*ptrterm = uitterm;
 		uitterm = NULL;
 	      }
-	    }
 	  }
 	}
 	if (print) {
@@ -82,14 +79,13 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 			a1 = uitterm->n1;
 			a2 = uitterm->n2;
 			a3 = uitterm->n3;
-			a4 = uitterm->n4;
 			c = 0;
 			printf("Coefficient of   ");
 			if (a1) {
 				printf("x^%d", a1);
 				c++;
 			}
-			if ((a1) && (a2 + a3 + a4)) {
+			if ((a1) && (a2 + a3)) {
 				printf(" * ");
 				c++;
 			}
@@ -97,20 +93,12 @@ static struct polynomial make_initial_pol(unsigned int degree, int print)
 				printf("y^%d", a2);
 				c++;
 			}
-			if ((a2) && (a3 + a4)) {
+			if ((a2) && (a3)) {
 				printf(" * ");
 				c++;
 			}
 			if (a3) {
 				printf("z^%d", a3);
-				c++;
-			}
-			if ((a3) && (a4)) {
-				printf(" * ");
-				c++;
-			}
-			if (a4) {
-				printf("w^%d", a4);
 				c++;
 			}
 			while (8 - c) {
@@ -179,8 +167,8 @@ int main()
 		clean_pol(&myf);
 		retry = setup(1);
 
-		/* retry == 4 means quasi-smooth */
-		if (retry == 4) {
+		/* retry == 3 means quasi-smooth */
+		if (retry == 3) {
 			for (i = 0; i + 1 <= nr; i++) {
 				printf("%d ", coeff[i]);
 			}
